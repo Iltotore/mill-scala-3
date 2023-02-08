@@ -15,7 +15,7 @@ object Task:
   import TaskContext.TaskControl
 
   inline def create[T](inline body: TaskContext ?=> T)(using name: sourcecode.Name): Task[T] =
-    Named(name.value, Literal(Seq.empty, ctx => Result.Success(body(using ctx))))
+    Named(name.value, applicative(body))
 
   extension [T](task: Task[T])
 
