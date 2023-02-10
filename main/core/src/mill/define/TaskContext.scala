@@ -6,8 +6,10 @@ import os.Path
 import java.util.logging.{Level, Logger}
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("This method is only usable in a task or given a `TaskContext`")
-case class TaskContext(wd: Path, logger: Logger)
+@implicitNotFound(
+  "This method is only usable in a task or given a `TaskContext`"
+)
+case class TaskContext(wd: Path, logger: Logger, results: Map[Task[?], Any])
 
 object TaskContext:
 

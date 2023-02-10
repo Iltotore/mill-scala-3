@@ -11,6 +11,15 @@ trait MillModule extends ScalaModule with ScalafmtModule {
 
 object main extends MillModule {
 
-  object core extends MillModule
+  object api extends MillModule
 
+  object core extends MillModule {
+
+    def moduleDeps = Seq(api, util)
+  }
+
+  object util extends MillModule {
+
+    def moduleDeps = Seq(api)
+  }
 }
