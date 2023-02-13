@@ -1,7 +1,10 @@
 package mill.define
 
+import mill.api.Result
+
 import scala.language.implicitConversions
 import os.Path
+
 import java.util.logging.Level
 
 object T:
@@ -27,4 +30,4 @@ object T:
   def log(msg: String)(using ctx: TaskContext): Unit =
     ctx.logger.log(Level.INFO, msg)
 
-  def wd(using ctx: TaskContext): Path = ctx.wd
+  def dest(using ctx: TaskContext): Path = ctx.dest

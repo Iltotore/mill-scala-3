@@ -31,10 +31,9 @@ object Graph:
       def rec(t: Task[?]): Unit =
         if transitiveTargets.contains(t) then () // do nothing
         else if important.isDefinedAt(t) && t != target then () // do nothing
-        else {
+        else
           transitiveTargets.append(t)
           t.inputs.foreach(rec)
-        }
       rec(target)
       output.addAll(t, topoSorted(transitiveTargets).values)
     output
@@ -53,11 +52,9 @@ object Graph:
   def transitiveNodes(sourceNodes: Agg[Task[?]]): Agg[Task[?]] =
     val transitiveNodes = new Agg.Mutable[Task[?]]
     def rec(t: Task[?]): Unit =
-      if transitiveNodes.contains(t) then {} // do nothing
-      else {
+      if !transitiveNodes.contains(t) then
         transitiveNodes.append(t)
         t.inputs.foreach(rec)
-      }
 
     sourceNodes.items.foreach(rec)
     transitiveNodes

@@ -1,6 +1,6 @@
-package mill.define
+package mill.api
 
-import mill.define.Result.{Aborted, Failure, Skipped, Success}
+import mill.define.TaskContext.TaskControl
 
 enum Result[+T]:
   case Success(value: T)
@@ -24,3 +24,9 @@ object Result:
       case Failure(message) => Failure(message)
       case Skipped          => Skipped
       case Aborted          => Aborted
+
+    def get: T = result match
+      case Success(value)   => value
+      case Failure(message) => throw TaskControl.Failure(message)
+      case Skipped          => throw TaskControl.Skipped
+      case Aborted          => throw TaskControl.Aborted
