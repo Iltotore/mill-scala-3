@@ -1,6 +1,6 @@
-import mill._, scalalib._
+import mill._, scalalib._, scalafmt._
 
-trait MillModule extends ScalaModule {
+trait MillModule extends ScalaModule with ScalafmtModule {
   def scalaVersion = "3.2.2"
 
   def ivyDeps = Agg(
@@ -11,6 +11,15 @@ trait MillModule extends ScalaModule {
 
 object main extends MillModule {
 
-  object core extends MillModule
+  object api extends MillModule
 
+  object core extends MillModule {
+
+    def moduleDeps = Seq(api, util)
+  }
+
+  object util extends MillModule {
+
+    def moduleDeps = Seq(api)
+  }
 }
