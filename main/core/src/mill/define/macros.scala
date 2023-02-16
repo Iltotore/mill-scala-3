@@ -2,6 +2,16 @@ package mill.define
 
 import scala.quoted.*
 
+def mapToExpr[A, B](list: List[A], f: A => Expr[B])(using Quotes, Type[B]): Expr[List[B]] = list match
+  case Nil => '{Nil}
+  case head :: tail => '{${f(head)} :: ${mapToExpr(tail, f)}}
+def flatMapToExpr[A, B](list: List[A], f: A => Expr[List[B]])(using Quotes, Type[B]): Expr[List[B]] = list match
+    case head :: tail => '{ ${ f(head) } ++ ${ flatMapToExpr(tail, f) } }
+    case Nil          => '{ Nil }
+def mapOptionToExpr[A, B](option: Option[A], f: A => Expr[List[B]])(using Quotes): Expr[List[B]] = option match
+    case Some(value) => f(value)
+    case None        => '{ Nil }
+
 inline def applicative[T](inline f: TaskContext ?=> T): Task[T] = ${ applicativeImpl[T]('f) }
 
 def applicativeImpl[T](expr: Expr[TaskContext ?=> T])(using Quotes, Type[T]): Expr[Task[T]] =
@@ -27,13 +37,7 @@ def applicativeImpl[T](expr: Expr[TaskContext ?=> T])(using Quotes, Type[T]): Ex
         case DefDef(_, _, _, Some(term)) => recTerm(term)
         case _                           => '{ Nil }
 
-    def flatMapToExpr[A](list: List[A], f: A => Expr[List[Task[?]]]): Expr[List[Task[?]]] = list match
-        case head :: tail => '{ ${ f(head) } ++ ${ flatMapToExpr(tail, f) } }
-        case Nil          => '{ Nil }
 
-    def mapOptionToExpr[A](option: Option[A], f: A => Expr[List[Task[?]]]): Expr[List[Task[?]]] = option match
-        case Some(value) => f(value)
-        case None        => '{ Nil }
 
     def recTerm(term: Term): Expr[List[Task[?]]] = term match
         case NamedArg(_, arg)                                                => recTerm(arg)
@@ -57,7 +61,7 @@ def applicativeImpl[T](expr: Expr[TaskContext ?=> T])(using Quotes, Type[T]): Ex
 
     '{ Task.Literal(${ recTerm(expr.asTerm) }, ctx => Result.Success(${ expr }(using ctx)) ) }
 
-inline def getModules[T]: List[T] = ${ getModulesImpl[T] }
+inline def getModules[T <: Module with Singleton]: List[Module] = ${ getModulesImpl[T] }
 
 def getModulesImpl[T <: Module with Singleton](using Quotes, Type[T]): Expr[List[Module]] =
     import quotes.reflect.*
@@ -68,5 +72,4 @@ def getModulesImpl[T <: Module with Singleton](using Quotes, Type[T]): Expr[List
             .declarations
             .filter(_.flags.is(Flags.Module))
             .filter(_.typeRef <:< TypeRepr.of[Module])
-            .map(_.termRef.asExprOf[Module])
-    'modules
+    mapToExpr(modules, sym => Ident(sym.termRef).asExprOf[Module])
