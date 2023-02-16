@@ -1,10 +1,12 @@
 package mill.define
 
+import mill.api.Result
+
 import scala.quoted.*
 
 def mapToExpr[A, B](list: List[A], f: A => Expr[B])(using Quotes, Type[B]): Expr[List[B]] = list match
-  case Nil => '{Nil}
-  case head :: tail => '{${f(head)} :: ${mapToExpr(tail, f)}}
+    case Nil          => '{ Nil }
+    case head :: tail => '{ ${ f(head) } :: ${ mapToExpr(tail, f) } }
 def flatMapToExpr[A, B](list: List[A], f: A => Expr[List[B]])(using Quotes, Type[B]): Expr[List[B]] = list match
     case head :: tail => '{ ${ f(head) } ++ ${ flatMapToExpr(tail, f) } }
     case Nil          => '{ Nil }
@@ -36,7 +38,6 @@ def applicativeImpl[T](expr: Expr[TaskContext ?=> T])(using Quotes, Type[T]): Ex
         case ValDef(_, _, Some(term))    => recTerm(term)
         case DefDef(_, _, _, Some(term)) => recTerm(term)
         case _                           => '{ Nil }
-
 
 
     def recTerm(term: Term): Expr[List[Task[?]]] = term match
