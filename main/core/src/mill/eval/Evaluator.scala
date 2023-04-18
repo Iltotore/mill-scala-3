@@ -49,7 +49,7 @@ class Evaluator(homePath: Path, outPath: Path, logger: Logger):
                 logged += 1
                 logger.info(s"\u001b[36m[$logged/$count] $name\u001b[0m")
               case _ =>
-            
+
             val ctx = TaskContext(outPath / task.id, logger, results.toMap ++ newResults, inputValues)
             task.evaluate(ctx)
           else

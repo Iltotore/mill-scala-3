@@ -77,5 +77,3 @@ object Task:
     def id: String = task match
       case Named(name, _) => name
       case task           => task.hashCode().toString
-
-    
